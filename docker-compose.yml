@@ -1,0 +1,19 @@
+services:
+  module-name:
+    build:
+      dockerfile: ./Dockerfile
+      context: ./
+    restart: always
+    image: module-name
+    container_name: module-name
+    volumes:
+      - /home/kinoko/logs/module-name:/logs
+    #      - ./logs:/logs                             # Для отладки на windows машине
+    networks:
+      - backend
+    ports:
+      - "33300:33300"
+
+networks:
+  backend:
+    external: true
