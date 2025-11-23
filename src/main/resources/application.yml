@@ -3,7 +3,7 @@ logging:
 
 spring:
   application:
-    name: kotlin-template-repository
+    name: marketplace-messanger-api
 
 server:
-  port: 33300
+  port: 33305

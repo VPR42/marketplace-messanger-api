@@ -1,18 +1,18 @@
 services:
-  module-name:
+  marketplace-messanger-api:
     build:
       dockerfile: ./Dockerfile
       context: ./
     restart: always
-    image: module-name
-    container_name: module-name
+    image: marketplace-messanger-api
+    container_name: marketplace-messanger-api
     volumes:
-      - /home/kinoko/logs/module-name:/logs
+      - /home/kinoko/logs/marketplace-messanger-api:/logs
     #      - ./logs:/logs                             # Для отладки на windows машине
     networks:
       - backend
     ports:
-      - "33300:33300"
+      - "33305:33305"
 
 networks:
   backend:
