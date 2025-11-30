@@ -83,7 +83,6 @@ class ChatRepository(
             }
     }
 
-
     fun findAllByUserId(userId: UUID): List<Chats> =
         dsl.selectFrom(CHATS)
             .where(
