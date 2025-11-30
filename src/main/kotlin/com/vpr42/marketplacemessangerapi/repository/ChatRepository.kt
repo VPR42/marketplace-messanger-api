@@ -35,6 +35,17 @@ class ChatRepository(
                     CHATS.MASTER_ID.eq(userId)
                         .or(CHATS.CUSTOMER_ID.eq(userId))
                 )
+        )
+
+    fun isCanConnect(userId: UUID, chatId: Long) = dsl
+        .fetchExists(
+            dsl.selectOne()
+                .from(CHATS)
+                .where(CHATS.ORDER_ID.eq(chatId))
+                .and(
+                    CHATS.MASTER_ID.eq(userId)
+                        .or(CHATS.CUSTOMER_ID.eq(userId))
+                )
                 .and(CHATS.STATUS.eq(ChatStatus.OPEN))
         )
 

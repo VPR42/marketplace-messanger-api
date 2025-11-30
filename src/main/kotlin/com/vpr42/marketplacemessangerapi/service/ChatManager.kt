@@ -107,5 +107,5 @@ class ChatManager(
         return chat.toChatResponse()
     }
 
-    fun isCanConnect(senderId: UUID, chatId: Long): Boolean = chatRepository.isCanChat(senderId, chatId)
+    fun isCanConnect(senderId: UUID, chatId: Long): Boolean = chatRepository.isCanConnect(senderId, chatId)
 }
