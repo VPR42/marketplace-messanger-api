@@ -18,5 +18,4 @@ class OrderRepository(
         .on(ORDERS.JOB_ID.eq(JOBS.ID))
         .where(ORDERS.ID.eq(orderId))
         .fetchOneInto(Orders::class.java)
-
 }
