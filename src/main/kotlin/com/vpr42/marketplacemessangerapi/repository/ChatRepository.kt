@@ -19,14 +19,6 @@ class ChatRepository(
     private val dsl: DSLContext
 ) {
 
-    fun isChatExist(masterId: UUID, customerId: UUID) = dsl
-        .fetchExists(
-            dsl.selectOne()
-                .from(CHATS)
-                .where(CHATS.MASTER_ID.eq(masterId))
-                .and(CHATS.CUSTOMER_ID.eq(customerId))
-        )
-
     fun isChatExist(orderId: Long) = dsl
         .fetchExists(
             dsl.selectOne()

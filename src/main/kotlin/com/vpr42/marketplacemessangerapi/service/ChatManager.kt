@@ -70,7 +70,7 @@ class ChatManager(
 
     fun createChat(customerId: UUID, orderId: Long): ChatResponse {
         val job = requireNotNull(orderRepository.findJobByOrderId(orderId)) { "Job for this order not found" }
-        require(chatRepository.isChatExist(job.masterId, customerId)) { "Chat for this order already exist" }
+        require(chatRepository.isChatExist(orderId)) { "Chat for this order already exist" }
 
         val chat = requireNotNull(
             chatRepository.insert(
