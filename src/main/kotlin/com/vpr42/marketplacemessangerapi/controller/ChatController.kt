@@ -1,5 +1,6 @@
 package com.vpr42.marketplacemessangerapi.controller
 
+import com.vpr42.marketplacemessangerapi.dto.ChatCart
 import com.vpr42.marketplacemessangerapi.dto.response.ChatResponse
 import com.vpr42.marketplacemessangerapi.service.ChatManager
 import io.swagger.v3.oas.annotations.Operation
@@ -7,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -25,7 +27,7 @@ class ChatController(
 ) {
     private val logger = LoggerFactory.getLogger(ChatController::class.java)
 
-    @RequestMapping("/create/{id}")
+    @PostMapping("/create/{id}")
     @Operation(summary = "Метод создания чата к заказу")
     fun createChat(
         @RequestHeader("id") userId: String,
@@ -37,7 +39,7 @@ class ChatController(
         )
     }
 
-    @RequestMapping("/close/{id}")
+    @PatchMapping("/close/{id}")
     @Operation(summary = "Метод закрытия чата к заказу")
     fun closeChat(
         @PathVariable("id") orderId: String
@@ -45,6 +47,26 @@ class ChatController(
         logger.info("Request to close chat for order $orderId")
         return ResponseEntity.ok(
             chatManager.closeChat(orderId.toLong())
+        )
+    }
+
+    @GetMapping("/all")
+    fun getAllChatsList(
+        @RequestHeader("id") userId: String,
+    ): ResponseEntity<List<ChatCart>> {
+        logger.info("Request to get all chats list of user $userId")
+        return ResponseEntity.ok(
+            chatManager.getChatsList(UUID.fromString(userId))
+        )
+    }
+
+    @GetMapping("/open")
+    fun getOpenChatsList(
+        @RequestHeader("id") userId: String,
+    ): ResponseEntity<List<ChatCart>> {
+        logger.info("Request to get open chats list of user $userId")
+        return ResponseEntity.ok(
+            chatManager.getChatsList(UUID.fromString(userId), true)
         )
     }
 }

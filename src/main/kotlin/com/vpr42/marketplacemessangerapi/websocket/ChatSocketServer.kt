@@ -7,7 +7,7 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 @Component
 class ChatSocketServer(
     private val handler: ChatSocketHandler,
-): WebSocketConfigurer {
+) : WebSocketConfigurer {
     override fun registerWebSocketHandlers(registry: WebSocketHandlerRegistry) {
         registry
             .addHandler(handler, "/ws/chat")

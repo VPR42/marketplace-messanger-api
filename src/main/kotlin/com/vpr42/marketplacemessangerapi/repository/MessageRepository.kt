@@ -11,6 +11,13 @@ class MessageRepository(
     private val dsl: DSLContext,
 ) {
 
+    fun findLastMessage(chatId: Long) = dsl
+        .selectFrom(MESSAGES)
+        .where(MESSAGES.CHAT_ID.eq(chatId))
+        .orderBy(MESSAGES.SENT_AT.desc())
+        .limit(1)
+        .fetchOneInto(Messages::class.java)
+
     fun insert(message: MessagesRecord) = dsl
         .insertInto(MESSAGES)
         .set(message)
