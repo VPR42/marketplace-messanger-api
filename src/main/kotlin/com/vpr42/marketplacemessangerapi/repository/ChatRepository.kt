@@ -6,7 +6,7 @@ import com.vpr42.marketplace.jooq.tables.records.ChatsRecord
 import com.vpr42.marketplace.jooq.tables.references.CHATS
 import org.jooq.DSLContext
 import org.springframework.stereotype.Repository
-import java.util.UUID
+import java.util.*
 
 @Repository
 class ChatRepository(
@@ -38,6 +38,25 @@ class ChatRepository(
                         .or(CHATS.CUSTOMER_ID.eq(userId))
                 )
         )
+
+    fun findAllByUserId(userId: UUID): List<Chats> =
+        dsl.selectFrom(CHATS)
+            .where(
+                CHATS.MASTER_ID.eq(userId)
+                    .or(CHATS.CUSTOMER_ID.eq(userId))
+            )
+            .fetchInto(Chats::class.java)
+
+    fun findOpenByUserId(userId: UUID) = dsl
+        .selectFrom(CHATS)
+        .where(
+            CHATS.STATUS.eq(ChatStatus.OPEN)
+                .and(
+                    CHATS.MASTER_ID.eq(userId)
+                        .or(CHATS.CUSTOMER_ID.eq(userId))
+                )
+        )
+        .fetchInto(Chats::class.java)
 
     fun insert(record: ChatsRecord) = dsl
         .insertInto(CHATS)
