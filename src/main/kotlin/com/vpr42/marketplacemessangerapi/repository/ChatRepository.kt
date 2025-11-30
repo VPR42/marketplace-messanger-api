@@ -39,15 +39,18 @@ class ChatRepository(
         )
 
     fun findChatmate(userId: UUID, chatId: Long): ChatmateInfo? {
-        val chatmateIdField = DSL
+        // "сырое" выражение без алиаса — для join'а
+        val chatmateExpr = DSL
             .case_()
             .`when`(CHATS.MASTER_ID.eq(userId), CHATS.CUSTOMER_ID)
             .otherwise(CHATS.MASTER_ID)
-            .`as`("chatmate_id")
+
+        // то же, но с алиасом — для select
+        val chatmateIdField = chatmateExpr.`as`("chatmate_id")
 
         return dsl
             .select(
-                chatmateIdField,
+                chatmateIdField,                 // SELECT ... AS chatmate_id
                 USERS.NAME,
                 USERS.SURNAME,
                 MASTERS_INFO.DESCRIPTION,
@@ -59,14 +62,16 @@ class ChatRepository(
             .join(JOBS)
             .on(JOBS.ID.eq(ORDERS.JOB_ID))
             .join(USERS)
-            .on(USERS.ID.eq(chatmateIdField.cast(UUID::class.java)))
+            .on(USERS.ID.eq(chatmateExpr)) // тут уже БЕЗ алиаса
             .leftJoin(MASTERS_INFO)
             .on(MASTERS_INFO.MASTER_ID.eq(USERS.ID))
             .where(
-                CHATS.MASTER_ID.eq(userId)
-                    .or(CHATS.CUSTOMER_ID.eq(userId))
+                CHATS.ORDER_ID.eq(chatId)
+                    .and(
+                        CHATS.MASTER_ID.eq(userId)
+                            .or(CHATS.CUSTOMER_ID.eq(userId))
+                    )
             )
-            .and(CHATS.ORDER_ID.eq(chatId))
             .fetchOne { r ->
                 ChatmateInfo(
                     chatmateId = requireNotNull(r.get(chatmateIdField)) { "chatmateId shouldn't be null" },
@@ -77,6 +82,7 @@ class ChatRepository(
                 )
             }
     }
+
 
     fun findAllByUserId(userId: UUID): List<Chats> =
         dsl.selectFrom(CHATS)

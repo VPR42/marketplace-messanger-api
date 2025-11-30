@@ -99,7 +99,7 @@ class ChatManager(
     }
 
     fun closeChat(orderId: Long): ChatResponse {
-        require(chatRepository.isChatExist(orderId)) { "Chat for this order already exist" }
+        require(chatRepository.isChatExist(orderId)) { "Chat for this order not exist" }
 
         val chat = requireNotNull(chatRepository.closeChat(orderId)) { "Chat creating ends with error" }
         logger.info("Chat for order $orderId closed successfully")
