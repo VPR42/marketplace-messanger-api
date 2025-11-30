@@ -10,5 +10,14 @@ spring:
     username: mp_dev_user
     password: mp_dev_passwd
 
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api/chat/docs
+  swagger-ui:
+    csrf:
+      enabled: true
+    path: /api/chat/swagger
+
 server:
   port: 33305

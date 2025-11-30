@@ -121,6 +121,10 @@ CREATE INDEX IF NOT EXISTS idx_chats_master_status
 CREATE INDEX IF NOT EXISTS idx_chats_customer_status
     ON chats (customer_id, status);
 
+-- чаты по челиксам
+CREATE UNIQUE INDEX IF NOT EXISTS uq_chats_master_customer
+    ON chats (master_id, customer_id);
+
 -- сообщения по чату с сортировкой времени по убыванию
 CREATE INDEX IF NOT EXISTS idx_messages_chat_sent_at
     ON messages (chat_id, sent_at DESC);
