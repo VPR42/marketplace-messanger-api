@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Set up Java
         uses: actions/setup-java@v5
@@ -31,7 +31,7 @@ jobs:
 
       - name: Upload artifacts
         if: github.ref == 'refs/heads/main'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: app-jars
           path: '**/build/libs/*.jar'
@@ -42,17 +42,13 @@ jobs:
     needs: build
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
-      - name: Create backup of current deployment
-        run: |
-          if [ -e "${{ env.TARGET_DIR }}" ]; then
-            sudo mkdir -p ${{ env.BACKUP_DIR }}
-            sudo cp -r ${{ env.TARGET_DIR }} ${{ env.BACKUP_DIR }}
-            echo "Backup created at ${{ env.BACKUP_DIR }}"
-          else
-            echo "Деплойев еще не было. Бекапа не буит"
-          fi
+      - name: Download built JARs
+        uses: actions/download-artifact@v6
+        with:
+          name: app-jars
+          path: ${{ env.JAR_DIR }}
 
       - name: Stop and remove existing containers
         run: |
@@ -67,12 +63,6 @@ jobs:
         run: |
           sudo cp -r ./* ${{ env.TARGET_DIR }}
           sudo chown -R kinoko:kinoko ${{ env.TARGET_DIR }}
-
-      - name: Download built JARs
-        uses: actions/download-artifact@v5
-        with:
-          name: app-jars
-          path: ${{ env.JAR_DIR }}
 
       - name: Copy JAR to server
         run: |
@@ -98,20 +88,3 @@ jobs:
         run: |
           sudo rm -rf ${{ env.BACKUP_DIR }}
           echo "Деплой окончен"
-
-      - name: Rollback on failure
-        if: failure()
-        run: |
-          echo "Ошибка деплоя. Откат на предыдущую версию..."
-          if [ -f "${{ env.TARGET_DIR }}/docker-compose.yml" ]; then
-            docker compose -f ${{ env.TARGET_DIR }}/docker-compose.yml down
-          fi
-          sudo rm -rf ${{ env.TARGET_DIR }}
-          if [ -d "${{ env.BACKUP_DIR }}" ]; then
-            sudo mv ${{ env.BACKUP_DIR }} ${{ env.TARGET_DIR }}
-            sudo chown -R kinoko:kinoko ${{ env.TARGET_DIR }}
-            docker compose -f ${{ env.TARGET_DIR }}/docker-compose.yml up -d
-            echo "Откат на предыдущую версию успешен"
-          else
-            echo "Бекап не найден. Отката не буит"
-          fi
