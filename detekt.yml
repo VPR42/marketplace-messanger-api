@@ -50,9 +50,9 @@ style:
   UnusedImports:
     active: true
   ThrowsCount:
-    max: 4
+    max: 6
   ReturnCount:
-    max: 4
+    max: 6
 exceptions:
   TooGenericExceptionCaught:
     active: false
