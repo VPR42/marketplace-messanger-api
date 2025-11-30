@@ -1,5 +1,7 @@
 package com.vpr42.marketplacemessangerapi.websocket
 
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.vpr42.marketplacemessangerapi.dto.Message
@@ -27,7 +29,10 @@ class ChatSocketHandler(
 
     private val logger = LoggerFactory.getLogger(ChatSocketHandler::class.java)
 
-    private val mapper = jacksonObjectMapper()
+    private val mapper = jacksonObjectMapper().apply {
+        registerModule(JavaTimeModule())
+        disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+    }
 
     /** chatId -> sessions */
     private val sessions = ConcurrentHashMap<Long, MutableSet<WebSocketSession>>()
