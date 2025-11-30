@@ -47,6 +47,7 @@ class ChatRepository(
 
         // то же, но с алиасом — для select
         val chatmateIdField = chatmateExpr.`as`("chatmate_id")
+        val orderNameField = JOBS.NAME.`as`("order_name")
 
         return dsl
             .select(
@@ -54,7 +55,7 @@ class ChatRepository(
                 USERS.NAME,
                 USERS.SURNAME,
                 MASTERS_INFO.DESCRIPTION,
-                JOBS.NAME
+                orderNameField
             )
             .from(CHATS)
             .join(ORDERS)
@@ -78,7 +79,7 @@ class ChatRepository(
                     name = requireNotNull(r.get(USERS.NAME)) { "name shouldn't be null" },
                     surname = requireNotNull(r.get(USERS.SURNAME)) { "surname shouldn't be null" },
                     description = r.get(MASTERS_INFO.DESCRIPTION) ?: "Пользователь заказчик",
-                    orderName = requireNotNull(r.get(JOBS.NAME)) { "orderName shouldn't be null" },
+                    orderName = requireNotNull(r.get(orderNameField)) { "orderName shouldn't be null" },
                 )
             }
     }
