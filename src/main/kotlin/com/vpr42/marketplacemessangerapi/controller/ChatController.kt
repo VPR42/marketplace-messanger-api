@@ -1,6 +1,7 @@
 package com.vpr42.marketplacemessangerapi.controller
 
 import com.vpr42.marketplacemessangerapi.dto.ChatCart
+import com.vpr42.marketplacemessangerapi.dto.ChatmateInfo
 import com.vpr42.marketplacemessangerapi.dto.response.ChatResponse
 import com.vpr42.marketplacemessangerapi.service.ChatManager
 import io.swagger.v3.oas.annotations.Operation
@@ -51,6 +52,7 @@ class ChatController(
     }
 
     @GetMapping("/all")
+    @Operation(summary = "Метод получения всех чатов")
     fun getAllChatsList(
         @RequestHeader("id") userId: String,
     ): ResponseEntity<List<ChatCart>> {
@@ -61,12 +63,24 @@ class ChatController(
     }
 
     @GetMapping("/open")
+    @Operation(summary = "Метод получения только чатов с открытыми заказами")
     fun getOpenChatsList(
         @RequestHeader("id") userId: String,
     ): ResponseEntity<List<ChatCart>> {
         logger.info("Request to get open chats list of user $userId")
         return ResponseEntity.ok(
             chatManager.getChatsList(UUID.fromString(userId), true)
+        )
+    }
+
+    @GetMapping("/chatmate/{id}")
+    fun getChatmateInfo(
+        @PathVariable("id") chatId: String,
+        @RequestHeader("id") userId: String,
+    ): ResponseEntity<ChatmateInfo> {
+        logger.info("Request get profile info for chat $chatId")
+        return ResponseEntity.ok(
+            chatManager.getChatmateInfo(chatId.toLong(), UUID.fromString(userId))
         )
     }
 }
