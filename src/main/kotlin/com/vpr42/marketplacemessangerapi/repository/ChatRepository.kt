@@ -54,6 +54,7 @@ class ChatRepository(
                 chatmateIdField,
                 USERS.NAME,
                 USERS.SURNAME,
+                USERS.AVATAR_PATH,
                 MASTERS_INFO.DESCRIPTION,
                 orderNameField
             )
@@ -78,6 +79,7 @@ class ChatRepository(
                     chatmateId = requireNotNull(r.get(chatmateIdField)) { "chatmateId shouldn't be null" },
                     name = requireNotNull(r.get(USERS.NAME)) { "name shouldn't be null" },
                     surname = requireNotNull(r.get(USERS.SURNAME)) { "surname shouldn't be null" },
+                    avatar = requireNotNull(r.get(USERS.AVATAR_PATH)) { "avatar shouldn't be null" },
                     description = r.get(MASTERS_INFO.DESCRIPTION) ?: "Пользователь заказчик",
                     orderName = requireNotNull(r.get(orderNameField)) { "orderName shouldn't be null" },
                 )
