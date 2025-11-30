@@ -25,8 +25,8 @@ class ChatController(
 ) {
     private val logger = LoggerFactory.getLogger(ChatController::class.java)
 
-    @PostMapping("/create/{id}")
-    @Operation(description = "Метод создания чата к заказу")
+    @RequestMapping("/create/{id}")
+    @Operation(summary = "Метод создания чата к заказу")
     fun createChat(
         @RequestHeader("id") userId: String,
         @PathVariable("id") orderId: String
@@ -37,8 +37,8 @@ class ChatController(
         )
     }
 
-    @PatchMapping("/close/{id}")
-    @Operation(description = "Метод закрытия чата к заказу")
+    @RequestMapping("/close/{id}")
+    @Operation(summary = "Метод закрытия чата к заказу")
     fun closeChat(
         @PathVariable("id") orderId: String
     ): ResponseEntity<ChatResponse?> {

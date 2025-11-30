@@ -28,6 +28,17 @@ class ChatRepository(
                 .where(CHATS.ORDER_ID.eq(orderId))
         )
 
+    fun isCanChat(userId: UUID, chatId: Long) = dsl
+        .fetchExists(
+            dsl.selectOne()
+                .from(CHATS)
+                .where(CHATS.ORDER_ID.eq(chatId))
+                .and(
+                    CHATS.MASTER_ID.eq(userId)
+                        .or(CHATS.CUSTOMER_ID.eq(userId))
+                )
+        )
+
     fun insert(record: ChatsRecord) = dsl
         .insertInto(CHATS)
         .set(record)
