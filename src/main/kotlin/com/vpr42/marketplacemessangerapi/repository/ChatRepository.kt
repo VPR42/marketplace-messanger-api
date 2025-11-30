@@ -50,7 +50,7 @@ class ChatRepository(
 
         return dsl
             .select(
-                chatmateIdField,                 // SELECT ... AS chatmate_id
+                chatmateIdField,
                 USERS.NAME,
                 USERS.SURNAME,
                 MASTERS_INFO.DESCRIPTION,
