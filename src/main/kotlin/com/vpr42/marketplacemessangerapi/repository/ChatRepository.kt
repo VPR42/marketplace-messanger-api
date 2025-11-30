@@ -77,12 +77,11 @@ class ChatRepository(
             .and(CHATS.ORDER_ID.eq(chatId))
             .fetchOne { r ->
                 ChatmateInfo(
-                    chatmateId = r.get(chatmateIdField)
-                        ?: throw IllegalArgumentException("chatmateId shouldn't be null"),
-                    name = r.get(USERS.NAME) ?: throw IllegalArgumentException("name shouldn't be null"),
-                    surname = r.get(USERS.SURNAME) ?: throw IllegalArgumentException("surname shouldn't be null"),
+                    chatmateId = requireNotNull(r.get(chatmateIdField)) { "chatmateId shouldn't be null" },
+                    name = requireNotNull(r.get(USERS.NAME)) { "name shouldn't be null" },
+                    surname = requireNotNull(r.get(USERS.SURNAME)) { "surname shouldn't be null" },
                     description = r.get(MASTERS_INFO.DESCRIPTION) ?: "Пользователь заказчик",
-                    orderName = r.get(JOBS.NAME) ?: throw IllegalArgumentException("orderName shouldn't be null"),
+                    orderName = requireNotNull(r.get(JOBS.NAME)) { "orderName shouldn't be null" },
                 )
             }
     }
