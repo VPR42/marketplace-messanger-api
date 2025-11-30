@@ -1,9 +1,32 @@
 logging:
   config: 'classpath:log4j2.yml'
+  level:
+    com.netflix.discovery.shared: error
 
 spring:
   application:
     name: marketplace-messanger-api
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://kinoko.su:5432/mp_db_dev
+    username: mp_dev_user
+    password: mp_dev_passwd
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api/chat/docs
+  swagger-ui:
+    csrf:
+      enabled: true
+    path: /api/chat/swagger
+
+eureka:
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://marketplace-eureka:33307/eureka
 
 server:
   port: 33305
