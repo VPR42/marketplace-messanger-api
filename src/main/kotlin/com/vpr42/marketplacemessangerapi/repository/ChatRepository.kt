@@ -54,7 +54,7 @@ class ChatRepository(
                 USERS.NAME,
                 USERS.SURNAME,
                 MASTERS_INFO.DESCRIPTION,
-                JOBS.NAME.`as`("order_name")
+                JOBS.NAME
             )
             .from(CHATS)
             .join(ORDERS)
