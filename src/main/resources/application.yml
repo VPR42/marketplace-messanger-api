@@ -19,5 +19,12 @@ springdoc:
       enabled: true
     path: /api/chat/swagger
 
+eureka:
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://marketplace-eureka:33307/eureka
+
 server:
   port: 33305
