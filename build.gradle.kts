@@ -1,13 +1,10 @@
 import nu.studer.gradle.jooq.JooqGenerate
-import org.gradle.kotlin.dsl.named
-import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jooq.meta.jaxb.Database
 import org.jooq.meta.jaxb.Generate
 import org.jooq.meta.jaxb.Property
 import org.jooq.meta.jaxb.Target
 import org.springframework.boot.gradle.tasks.bundling.BootJar
-import kotlin.apply
 
 plugins {
     kotlin("jvm") version "2.0.21"
@@ -50,6 +47,9 @@ dependencies {
     jooqGenerator("org.jooq:jooq-meta:$jooqVersion")
     jooqGenerator("org.jooq:jooq-meta-extensions:$jooqVersion")
     runtimeOnly("org.postgresql:postgresql")
+
+    // Eureka
+    implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
 
     // Detekt
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")
