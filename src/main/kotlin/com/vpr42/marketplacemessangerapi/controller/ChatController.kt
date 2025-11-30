@@ -2,8 +2,10 @@ package com.vpr42.marketplacemessangerapi.controller
 
 import com.vpr42.marketplacemessangerapi.dto.ChatCart
 import com.vpr42.marketplacemessangerapi.dto.ChatmateInfo
+import com.vpr42.marketplacemessangerapi.dto.Message
 import com.vpr42.marketplacemessangerapi.dto.response.ChatResponse
 import com.vpr42.marketplacemessangerapi.service.ChatManager
+import com.vpr42.marketplacemessangerapi.service.MessageService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.slf4j.LoggerFactory
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import java.util.*
 
 @Controller
@@ -24,7 +27,8 @@ import java.util.*
     description = "Контроллер для менеджмента и работы с чатами"
 )
 class ChatController(
-    private val chatManager: ChatManager
+    private val chatManager: ChatManager,
+    private val messageService: MessageService
 ) {
     private val logger = LoggerFactory.getLogger(ChatController::class.java)
 
@@ -73,7 +77,8 @@ class ChatController(
         )
     }
 
-    @GetMapping("/chatmate/{id}")
+    @GetMapping("/{id}/chatmate")
+    @Operation(summary = "Метод получения информации о собеседнике")
     fun getChatmateInfo(
         @PathVariable("id") chatId: String,
         @RequestHeader("id") userId: String,
@@ -81,6 +86,25 @@ class ChatController(
         logger.info("Request get profile info for chat $chatId")
         return ResponseEntity.ok(
             chatManager.getChatmateInfo(chatId.toLong(), UUID.fromString(userId))
+        )
+    }
+
+    @GetMapping("/{id}/messages")
+    @Operation(summary = "Метод получения последних \"X\" сообщений в чате")
+    fun getChatHistory(
+        @RequestHeader("id") userId: String,
+        @PathVariable("id") chatId: String,
+        @RequestParam("page") page: Int,
+        @RequestParam("size") size: Int,
+    ): ResponseEntity<List<Message>?> {
+        logger.info("Request to get page $page of $size messages from $chatId chat")
+        return ResponseEntity.ok(
+            messageService.getMessagePage(
+                userId = UUID.fromString(userId),
+                chatId = chatId.toLong(),
+                page = page,
+                size = size
+            )
         )
     }
 }
