@@ -17,7 +17,7 @@ class MessageService(
 
     fun getMessagePage(
         userId: UUID,
-        chatId: Long,
+        chatId: UUID,
         page: Int,
         size: Int
     ): List<Message> {
@@ -42,6 +42,6 @@ class MessageService(
                 sentAt = message.sentAt
             )
         )
-        logger.debug("Message in ${message.chatId} saved successfully")
+        logger.debug("Message in {} saved successfully", message.chatId)
     }
 }

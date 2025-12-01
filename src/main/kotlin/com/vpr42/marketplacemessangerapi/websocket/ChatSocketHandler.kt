@@ -35,10 +35,10 @@ class ChatSocketHandler(
     }
 
     /** chatId -> sessions */
-    private val sessions = ConcurrentHashMap<Long, MutableSet<WebSocketSession>>()
+    private val sessions = ConcurrentHashMap<UUID, MutableSet<WebSocketSession>>()
 
     /** sessionId -> chatId */
-    private val sessionToChat = ConcurrentHashMap<String, Long>()
+    private val sessionToChat = ConcurrentHashMap<String, UUID>()
 
     /** sessionId -> uid (who is this session) */
     private val sessionToUid = ConcurrentHashMap<String, UUID>()
@@ -51,6 +51,12 @@ class ChatSocketHandler(
 
         val chatId = parsed.chatId
         val uid = parsed.uid
+
+        if (chatId == null) {
+            logger.warn("Connection ${session.id} rejected: no chat id in query")
+            session.close(CloseStatus.POLICY_VIOLATION.withReason("chat id is required"))
+            return
+        }
 
         if (uid == null) {
             logger.warn("Connection ${session.id} rejected: no uid in query")
@@ -157,7 +163,7 @@ class ChatSocketHandler(
         logger.info("Session ${session.id} disconnected from chat=$chatId, status=$status")
     }
 
-    private fun broadcast(chatId: Long, msg: Message) {
+    private fun broadcast(chatId: UUID, msg: Message) {
         val json = mapper.writeValueAsString(msg)
         val textMessage = TextMessage(json)
 
@@ -187,7 +193,7 @@ class ChatSocketHandler(
             .orEmpty()
 
         val chat = params["chat"]?.let {
-            runCatching { it.toLong() }.getOrNull()
+            runCatching { UUID.fromString(it) }.getOrNull()
         } ?: return null
 
         val uid = params["uid"]?.let {
@@ -198,7 +204,7 @@ class ChatSocketHandler(
     }
 
     private data class Parsed(
-        val chatId: Long,
+        val chatId: UUID?,
         val uid: UUID?,
     )
 }

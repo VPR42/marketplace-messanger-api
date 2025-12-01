@@ -1,7 +1,9 @@
 package com.vpr42.marketplacemessangerapi.dto
 
+import java.util.UUID
+
 data class ChatCart(
-    val chatId: Long,
+    val chatId: UUID,
     val chatmateName: String,
     val chatmateSurname: String,
     val chatmateAvatar: String,

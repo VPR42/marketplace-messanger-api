@@ -1,8 +1,7 @@
 package com.vpr42.marketplacemessangerapi.dto.response
 
-import com.vpr42.marketplace.jooq.enums.ChatStatus
+import java.util.*
 
 data class ChatResponse(
-    val chatId: Long?,
-    val status: ChatStatus,
+    val chatId: UUID,
 )

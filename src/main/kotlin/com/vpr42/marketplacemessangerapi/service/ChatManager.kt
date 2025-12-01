@@ -1,14 +1,13 @@
 package com.vpr42.marketplacemessangerapi.service
 
-import com.vpr42.marketplace.jooq.enums.ChatStatus
 import com.vpr42.marketplace.jooq.tables.records.ChatsRecord
 import com.vpr42.marketplacemessangerapi.dto.ChatCart
 import com.vpr42.marketplacemessangerapi.dto.Message
 import com.vpr42.marketplacemessangerapi.dto.response.ChatResponse
 import com.vpr42.marketplacemessangerapi.mapper.toChatResponse
 import com.vpr42.marketplacemessangerapi.repository.ChatRepository
+import com.vpr42.marketplacemessangerapi.repository.JobsRepository
 import com.vpr42.marketplacemessangerapi.repository.MessageRepository
-import com.vpr42.marketplacemessangerapi.repository.OrderRepository
 import com.vpr42.marketplacemessangerapi.repository.UserRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -18,32 +17,29 @@ import java.util.*
 @Service
 class ChatManager(
     private val chatRepository: ChatRepository,
-    private val orderRepository: OrderRepository,
+    private val jobsRepository: JobsRepository,
     private val messageService: MessageService,
     private val messageRepository: MessageRepository,
     private val userRepository: UserRepository,
 ) {
     private val logger = LoggerFactory.getLogger(ChatManager::class.java)
 
-    fun getChatsList(userId: UUID, isOpen: Boolean = false): List<ChatCart> {
-        val chats = if (isOpen) {
-            chatRepository.findOpenByUserId(userId)
-        } else {
-            chatRepository.findAllByUserId(userId)
-        }
+    fun getChatsList(userId: UUID): List<ChatCart> {
+        val chats = chatRepository.findAllByUserId(userId)
+
         val lastMessages = chats.associate {
-            val id = requireNotNull(it.orderId) { "Chat id shouldn't be null" }
+            val id = requireNotNull(it.jobId) { "Chat id shouldn't be null" }
             id to messageRepository.findLastMessage(id)
         }
         val chatmates = chats.associate {
-            val id = requireNotNull(it.orderId) { "Chat id shouldn't be null" }
+            val id = requireNotNull(it.jobId) { "Chat id shouldn't be null" }
             id to userRepository.findById(
                 if (it.masterId == userId) it.customerId else it.masterId
             )
         }
 
         return chats.map { chat ->
-            val id = requireNotNull(chat.orderId) { "Chat id shouldn't be null" }
+            val id = requireNotNull(chat.jobId) { "Chat id shouldn't be null" }
             ChatCart(
                 chatId = id,
                 chatmateName = chatmates[id]?.name ?: "Имя",
@@ -62,33 +58,33 @@ class ChatManager(
         }
     }
 
-    fun getChatmateInfo(chatId: Long, userId: UUID) = requireNotNull(
+    fun getChatmateInfo(chatId: UUID, userId: UUID) = requireNotNull(
         chatRepository.findChatmate(userId, chatId)
     ) {
         "Chatmate info not found"
     }
 
-    fun createChat(customerId: UUID, orderId: Long): ChatResponse {
-        val job = requireNotNull(orderRepository.findJobByOrderId(orderId)) { "Job for this order not found" }
-        require(!chatRepository.isChatExist(orderId)) { "Chat for this order already exist" }
+    // TODO проверить и переписать функцию
+    fun createChat(customerId: UUID, jobId: UUID): ChatResponse {
+        val job = requireNotNull(jobsRepository.findById(jobId)) { "Job for this order not found" }
+        require(!chatRepository.isChatExist(jobId)) { "Chat for this order already exist" }
 
         val chat = requireNotNull(
             chatRepository.insert(
                 ChatsRecord(
-                    orderId = orderId,
+                    jobId = jobId,
                     masterId = job.masterId,
                     customerId = customerId,
-                    status = ChatStatus.OPEN,
                 )
             )
         ) {
             "Chat creating ends with error"
         }
-        logger.info("Chat for order $orderId created successfully")
+        logger.info("Chat for order $jobId created successfully")
 
         messageService.saveMessage(
             Message(
-                chatId = orderId,
+                chatId = jobId,
                 sender = customerId,
                 content = "Добрый день. Можете выполнить заказ \"${job.name}\"?",
                 sentAt = OffsetDateTime.now()
@@ -98,14 +94,5 @@ class ChatManager(
         return chat.toChatResponse()
     }
 
-    fun closeChat(orderId: Long): ChatResponse {
-        require(chatRepository.isChatExist(orderId)) { "Chat for this order not exist" }
-
-        val chat = requireNotNull(chatRepository.closeChat(orderId)) { "Chat creating ends with error" }
-        logger.info("Chat for order $orderId closed successfully")
-
-        return chat.toChatResponse()
-    }
-
-    fun isCanConnect(senderId: UUID, chatId: Long): Boolean = chatRepository.isCanConnect(senderId, chatId)
+    fun isCanConnect(senderId: UUID, chatId: UUID): Boolean = chatRepository.isCanChat(senderId, chatId)
 }

@@ -1,12 +1,10 @@
 package com.vpr42.marketplacemessangerapi.repository
 
-import com.vpr42.marketplace.jooq.enums.ChatStatus
 import com.vpr42.marketplace.jooq.tables.pojos.Chats
 import com.vpr42.marketplace.jooq.tables.records.ChatsRecord
 import com.vpr42.marketplace.jooq.tables.references.CHATS
 import com.vpr42.marketplace.jooq.tables.references.JOBS
 import com.vpr42.marketplace.jooq.tables.references.MASTERS_INFO
-import com.vpr42.marketplace.jooq.tables.references.ORDERS
 import com.vpr42.marketplace.jooq.tables.references.USERS
 import com.vpr42.marketplacemessangerapi.dto.ChatmateInfo
 import org.jooq.DSLContext
@@ -19,37 +17,25 @@ class ChatRepository(
     private val dsl: DSLContext
 ) {
 
-    fun isChatExist(orderId: Long) = dsl
+    fun isChatExist(jobId: UUID) = dsl
         .fetchExists(
             dsl.selectOne()
                 .from(CHATS)
-                .where(CHATS.ORDER_ID.eq(orderId))
+                .where(CHATS.JOB_ID.eq(jobId))
         )
 
-    fun isCanChat(userId: UUID, chatId: Long) = dsl
+    fun isCanChat(userId: UUID, chatId: UUID) = dsl
         .fetchExists(
             dsl.selectOne()
                 .from(CHATS)
-                .where(CHATS.ORDER_ID.eq(chatId))
+                .where(CHATS.JOB_ID.eq(chatId))
                 .and(
                     CHATS.MASTER_ID.eq(userId)
                         .or(CHATS.CUSTOMER_ID.eq(userId))
                 )
         )
 
-    fun isCanConnect(userId: UUID, chatId: Long) = dsl
-        .fetchExists(
-            dsl.selectOne()
-                .from(CHATS)
-                .where(CHATS.ORDER_ID.eq(chatId))
-                .and(
-                    CHATS.MASTER_ID.eq(userId)
-                        .or(CHATS.CUSTOMER_ID.eq(userId))
-                )
-                .and(CHATS.STATUS.eq(ChatStatus.OPEN))
-        )
-
-    fun findChatmate(userId: UUID, chatId: Long): ChatmateInfo? {
+    fun findChatmate(userId: UUID, chatId: UUID): ChatmateInfo? {
         // "сырое" выражение без алиаса — для join'а
         val chatmateExpr = DSL
             .case_()
@@ -70,16 +56,14 @@ class ChatRepository(
                 orderNameField
             )
             .from(CHATS)
-            .join(ORDERS)
-            .on(ORDERS.ID.eq(CHATS.ORDER_ID))
             .join(JOBS)
-            .on(JOBS.ID.eq(ORDERS.JOB_ID))
+            .on(JOBS.ID.eq(CHATS.JOB_ID))
             .join(USERS)
             .on(USERS.ID.eq(chatmateExpr)) // тут уже БЕЗ алиаса
             .leftJoin(MASTERS_INFO)
             .on(MASTERS_INFO.MASTER_ID.eq(USERS.ID))
             .where(
-                CHATS.ORDER_ID.eq(chatId)
+                CHATS.JOB_ID.eq(chatId)
                     .and(
                         CHATS.MASTER_ID.eq(userId)
                             .or(CHATS.CUSTOMER_ID.eq(userId))
@@ -105,27 +89,9 @@ class ChatRepository(
             )
             .fetchInto(Chats::class.java)
 
-    fun findOpenByUserId(userId: UUID) = dsl
-        .selectFrom(CHATS)
-        .where(
-            CHATS.STATUS.eq(ChatStatus.OPEN)
-                .and(
-                    CHATS.MASTER_ID.eq(userId)
-                        .or(CHATS.CUSTOMER_ID.eq(userId))
-                )
-        )
-        .fetchInto(Chats::class.java)
-
     fun insert(record: ChatsRecord) = dsl
         .insertInto(CHATS)
         .set(record)
-        .returning()
-        .fetchOneInto(Chats::class.java)
-
-    fun closeChat(orderId: Long) = dsl
-        .update(CHATS)
-        .set(CHATS.STATUS, ChatStatus.CLOSED)
-        .where(CHATS.ORDER_ID.eq(orderId))
         .returning()
         .fetchOneInto(Chats::class.java)
 }
