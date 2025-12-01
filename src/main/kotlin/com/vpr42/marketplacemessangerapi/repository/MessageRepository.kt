@@ -14,7 +14,7 @@ class MessageRepository(
     private val dsl: DSLContext,
 ) {
 
-    fun findLastMessage(chatId: Long) = dsl
+    fun findLastMessage(chatId: UUID) = dsl
         .selectFrom(MESSAGES)
         .where(MESSAGES.CHAT_ID.eq(chatId))
         .orderBy(MESSAGES.SENT_AT.desc())
@@ -22,7 +22,7 @@ class MessageRepository(
         .fetchOneInto(Messages::class.java)
 
     fun findMessagesPage(
-        chatId: Long,
+        chatId: UUID,
         page: Int,
         pageSize: Int = 50
     ): List<Message> {

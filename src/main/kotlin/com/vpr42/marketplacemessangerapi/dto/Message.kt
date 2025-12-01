@@ -4,7 +4,7 @@ import java.time.OffsetDateTime
 import java.util.UUID
 
 data class Message(
-    val chatId: Long,
+    val chatId: UUID,
     val sender: UUID,
     val content: String,
     val sentAt: OffsetDateTime

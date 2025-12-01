@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestHeader
@@ -32,30 +31,43 @@ class ChatController(
 ) {
     private val logger = LoggerFactory.getLogger(ChatController::class.java)
 
-    @PostMapping("/create/{id}")
+    @PostMapping("/{id}")
     @Operation(summary = "Метод создания чата к заказу")
     fun createChat(
         @RequestHeader("id") userId: String,
-        @PathVariable("id") orderId: String
-    ): ResponseEntity<ChatResponse?> {
-        logger.info("Request to create chat for order $orderId")
+        @PathVariable("id") jobId: String
+    ): ResponseEntity<ChatResponse> {
+        logger.info("Request to create chat for job $jobId")
+        val chatId = UUID.fromString(jobId)
+
+        return if (!chatManager.isChatExist(chatId)) {
+            ResponseEntity.ok(
+                chatManager.createChat(
+                    customerId = UUID.fromString(userId),
+                    jobId = chatId
+                )
+            )
+        } else {
+            ResponseEntity.ok(ChatResponse(chatId = chatId))
+        }
+    }
+
+    @PostMapping("/{id}/create-order")
+    @Operation(summary = "Метод для отправки сообщения о том что вы сделали заказ")
+    fun createOrder(
+        @RequestHeader("id") userId: String,
+        @PathVariable("id") chatId: String
+    ): ResponseEntity<ChatResponse> {
+        logger.info("Request to send create order message to chat $chatId")
         return ResponseEntity.ok(
-            chatManager.createChat(UUID.fromString(userId), orderId.toLong())
+            messageService.createOrder(
+                customerId = UUID.fromString(userId),
+                chatId = UUID.fromString(chatId)
+            )
         )
     }
 
-    @PatchMapping("/close/{id}")
-    @Operation(summary = "Метод закрытия чата к заказу")
-    fun closeChat(
-        @PathVariable("id") orderId: String
-    ): ResponseEntity<ChatResponse?> {
-        logger.info("Request to close chat for order $orderId")
-        return ResponseEntity.ok(
-            chatManager.closeChat(orderId.toLong())
-        )
-    }
-
-    @GetMapping("/all")
+    @GetMapping()
     @Operation(summary = "Метод получения всех чатов")
     fun getAllChatsList(
         @RequestHeader("id") userId: String,
@@ -63,17 +75,6 @@ class ChatController(
         logger.info("Request to get all chats list of user $userId")
         return ResponseEntity.ok(
             chatManager.getChatsList(UUID.fromString(userId))
-        )
-    }
-
-    @GetMapping("/open")
-    @Operation(summary = "Метод получения только чатов с открытыми заказами")
-    fun getOpenChatsList(
-        @RequestHeader("id") userId: String,
-    ): ResponseEntity<List<ChatCart>> {
-        logger.info("Request to get open chats list of user $userId")
-        return ResponseEntity.ok(
-            chatManager.getChatsList(UUID.fromString(userId), true)
         )
     }
 
@@ -85,7 +86,10 @@ class ChatController(
     ): ResponseEntity<ChatmateInfo> {
         logger.info("Request get profile info for chat $chatId")
         return ResponseEntity.ok(
-            chatManager.getChatmateInfo(chatId.toLong(), UUID.fromString(userId))
+            chatManager.getChatmateInfo(
+                chatId = UUID.fromString(chatId),
+                userId = UUID.fromString(userId)
+            )
         )
     }
 
@@ -101,7 +105,7 @@ class ChatController(
         return ResponseEntity.ok(
             messageService.getMessagePage(
                 userId = UUID.fromString(userId),
-                chatId = chatId.toLong(),
+                chatId = UUID.fromString(chatId),
                 page = page,
                 size = size
             )
