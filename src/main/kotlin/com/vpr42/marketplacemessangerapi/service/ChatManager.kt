@@ -36,6 +36,7 @@ class ChatManager(
         val chat = requireNotNull(
             chatRepository.insert(
                 ChatsRecord(
+                    id = UUID.randomUUID(),
                     jobId = jobId,
                     masterId = job.masterId,
                     customerId = customerId,
