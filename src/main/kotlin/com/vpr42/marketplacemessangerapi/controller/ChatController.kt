@@ -3,7 +3,6 @@ package com.vpr42.marketplacemessangerapi.controller
 import com.vpr42.marketplacemessangerapi.dto.ChatCart
 import com.vpr42.marketplacemessangerapi.dto.ChatmateInfo
 import com.vpr42.marketplacemessangerapi.dto.Message
-import com.vpr42.marketplacemessangerapi.dto.response.ChatResponse
 import com.vpr42.marketplacemessangerapi.service.ChatManager
 import com.vpr42.marketplacemessangerapi.service.MessageService
 import io.swagger.v3.oas.annotations.Operation
@@ -36,19 +35,22 @@ class ChatController(
     fun createChat(
         @RequestHeader("id") userId: String,
         @PathVariable("id") jobId: String
-    ): ResponseEntity<ChatResponse> {
+    ): ResponseEntity<ChatCart> {
         logger.info("Request to create chat for job $jobId")
-        val chatId = UUID.fromString(jobId)
+        val jobUuid = UUID.fromString(jobId)
+        val userUuid = UUID.fromString(userId)
 
-        return if (!chatManager.isChatExist(chatId)) {
+        return if (!chatManager.isChatExist(jobUuid, userUuid)) {
             ResponseEntity.ok(
                 chatManager.createChat(
-                    customerId = UUID.fromString(userId),
-                    jobId = chatId
+                    customerId = userUuid,
+                    jobId = jobUuid
                 )
             )
         } else {
-            ResponseEntity.ok(ChatResponse(chatId = chatId))
+            ResponseEntity.ok(
+                chatManager.getChatCart(userUuid, jobUuid)
+            )
         }
     }
 
@@ -57,7 +59,7 @@ class ChatController(
     fun createOrder(
         @RequestHeader("id") userId: String,
         @PathVariable("id") chatId: String
-    ): ResponseEntity<ChatResponse> {
+    ): ResponseEntity<ChatCart> {
         logger.info("Request to send create order message to chat $chatId")
         return ResponseEntity.ok(
             messageService.createOrder(

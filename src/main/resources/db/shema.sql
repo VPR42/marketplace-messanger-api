@@ -98,7 +98,8 @@ CREATE TABLE IF NOT EXISTS orders
 
 CREATE TABLE IF NOT EXISTS chats
 (
-    job_id      UUID PRIMARY KEY REFERENCES jobs (id) ON DELETE CASCADE,
+    id          UUID PRIMARY KEY,
+    job_id      UUID NOT NULL REFERENCES jobs (id) ON DELETE CASCADE,
     master_id   UUID NOT NULL REFERENCES users (id),
     customer_id UUID NOT NULL REFERENCES users (id)
 );
@@ -106,23 +107,24 @@ CREATE TABLE IF NOT EXISTS chats
 CREATE TABLE IF NOT EXISTS messages
 (
     id      UUID PRIMARY KEY,
-    chat_id UUID                     NOT NULL REFERENCES chats (job_id) ON DELETE CASCADE,
+    chat_id UUID                     NOT NULL REFERENCES chats (id) ON DELETE CASCADE,
     sender  UUID                     NOT NULL REFERENCES users (id),
     content TEXT                     NOT NULL,
     sent_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
--- чаты, где пользователь мастер
-CREATE INDEX IF NOT EXISTS idx_chats_master_status
+-- выборка чатов, где пользователь мастер
+CREATE INDEX IF NOT EXISTS idx_chats_master
     ON chats (master_id);
 
--- чаты, где пользователь кастомер
-CREATE INDEX IF NOT EXISTS idx_chats_customer_status
+-- выборка чатов, где пользователь кастомер
+CREATE INDEX IF NOT EXISTS idx_chats_customer
     ON chats (customer_id);
 
--- чаты по челиксам (мастер + кастомер уникальны)
-CREATE UNIQUE INDEX IF NOT EXISTS uq_chats_master_customer
-    ON chats (master_id, customer_id);
+-- уникальность чата по услуге и кастомеру:
+-- один пользователь не может создать два чата по одной и той же услуге
+CREATE UNIQUE INDEX IF NOT EXISTS uq_chats_job_customer
+    ON chats (job_id, customer_id);
 
 -- сообщения по чату с сортировкой времени по убыванию
 CREATE INDEX IF NOT EXISTS idx_messages_chat_sent_at
