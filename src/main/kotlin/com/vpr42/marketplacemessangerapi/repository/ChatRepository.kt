@@ -17,18 +17,29 @@ class ChatRepository(
     private val dsl: DSLContext
 ) {
 
-    fun isChatExist(jobId: UUID) = dsl
+    fun isChatExist(chatId: UUID) = dsl
+        .fetchExists(
+            dsl.selectOne()
+                .from(CHATS)
+                .where(CHATS.ID.eq(chatId))
+        )
+
+    fun isChatExist(userId: UUID, jobId: UUID) = dsl
         .fetchExists(
             dsl.selectOne()
                 .from(CHATS)
                 .where(CHATS.JOB_ID.eq(jobId))
+                .and(
+                    CHATS.MASTER_ID.eq(userId)
+                        .or(CHATS.CUSTOMER_ID.eq(userId))
+                )
         )
 
     fun isCanChat(userId: UUID, chatId: UUID) = dsl
         .fetchExists(
             dsl.selectOne()
                 .from(CHATS)
-                .where(CHATS.JOB_ID.eq(chatId))
+                .where(CHATS.ID.eq(chatId))
                 .and(
                     CHATS.MASTER_ID.eq(userId)
                         .or(CHATS.CUSTOMER_ID.eq(userId))
@@ -63,7 +74,7 @@ class ChatRepository(
             .leftJoin(MASTERS_INFO)
             .on(MASTERS_INFO.MASTER_ID.eq(USERS.ID))
             .where(
-                CHATS.JOB_ID.eq(chatId)
+                CHATS.ID.eq(chatId)
                     .and(
                         CHATS.MASTER_ID.eq(userId)
                             .or(CHATS.CUSTOMER_ID.eq(userId))
@@ -80,6 +91,19 @@ class ChatRepository(
                 )
             }
     }
+
+    fun findById(id: UUID) = dsl
+        .selectFrom(CHATS)
+        .where(CHATS.ID.eq(id))
+        .fetchOneInto(Chats::class.java)
+
+    fun findByJobIdAndUserId(userId: UUID, jobId: UUID) = dsl
+        .selectFrom(CHATS)
+        .where(
+            CHATS.JOB_ID.eq(jobId)
+                .and(CHATS.CUSTOMER_ID.eq(userId))
+        )
+        .fetchOneInto(Chats::class.java)
 
     fun findAllByUserId(userId: UUID): List<Chats> =
         dsl.selectFrom(CHATS)

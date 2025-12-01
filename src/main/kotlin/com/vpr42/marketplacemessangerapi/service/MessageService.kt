@@ -1,8 +1,9 @@
 package com.vpr42.marketplacemessangerapi.service
 
 import com.vpr42.marketplace.jooq.tables.records.MessagesRecord
+import com.vpr42.marketplacemessangerapi.dto.ChatCart
 import com.vpr42.marketplacemessangerapi.dto.Message
-import com.vpr42.marketplacemessangerapi.dto.response.ChatResponse
+import com.vpr42.marketplacemessangerapi.mappers.ChatToChatCartMapper
 import com.vpr42.marketplacemessangerapi.repository.ChatRepository
 import com.vpr42.marketplacemessangerapi.repository.JobsRepository
 import com.vpr42.marketplacemessangerapi.repository.MessageRepository
@@ -15,11 +16,12 @@ import java.util.*
 class MessageService(
     private val chatRepository: ChatRepository,
     private val messageRepository: MessageRepository,
-    private val jobsRepository: JobsRepository
+    private val jobsRepository: JobsRepository,
+    private val chatCartMapper: ChatToChatCartMapper,
 ) {
     private val logger = LoggerFactory.getLogger(MessageService::class.java)
 
-    fun createOrder(customerId: UUID, chatId: UUID): ChatResponse {
+    fun createOrder(customerId: UUID, chatId: UUID): ChatCart {
         require(!chatRepository.isChatExist(chatId)) { "Chat with id $chatId not exist" }
         val job = requireNotNull(jobsRepository.findById(chatId)) { "Job from chat $chatId not found" }
 
@@ -32,7 +34,7 @@ class MessageService(
             )
         )
 
-        return ChatResponse(chatId)
+        return chatCartMapper.parce(chatId, customerId)
     }
 
     fun getMessagePage(
