@@ -36,12 +36,33 @@ class ChatController(
     fun createChat(
         @RequestHeader("id") userId: String,
         @PathVariable("id") jobId: String
-    ): ResponseEntity<ChatResponse?> {
+    ): ResponseEntity<ChatResponse> {
         logger.info("Request to create chat for job $jobId")
+        val chatId = UUID.fromString(jobId)
+
+        return if (!chatManager.isChatExist(chatId)) {
+            ResponseEntity.ok(
+                chatManager.createChat(
+                    customerId = UUID.fromString(userId),
+                    jobId = chatId
+                )
+            )
+        } else {
+            ResponseEntity.ok(ChatResponse(chatId = chatId))
+        }
+    }
+
+    @PostMapping("/{id}/create-order")
+    @Operation(summary = "Метод для отправки сообщения о том что вы сделали заказ")
+    fun createOrder(
+        @RequestHeader("id") userId: String,
+        @PathVariable("id") chatId: String
+    ): ResponseEntity<ChatResponse> {
+        logger.info("Request to send create order message to chat $chatId")
         return ResponseEntity.ok(
-            chatManager.createChat(
+            messageService.createOrder(
                 customerId = UUID.fromString(userId),
-                jobId = UUID.fromString(jobId)
+                chatId = UUID.fromString(chatId)
             )
         )
     }
