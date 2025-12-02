@@ -102,7 +102,7 @@ class ChatController(
         @PathVariable("id") chatId: String,
         @RequestParam("page") page: Int,
         @RequestParam("size") size: Int,
-    ): ResponseEntity<List<Message>?> {
+    ): ResponseEntity<List<Message>> {
         logger.info("Request to get page $page of $size messages from $chatId chat")
         return ResponseEntity.ok(
             messageService.getMessagePage(
