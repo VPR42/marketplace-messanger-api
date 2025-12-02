@@ -19,9 +19,12 @@ class ChatManager(
 
     fun getChatsList(userId: UUID): List<ChatCart> {
         val chats = chatRepository.findAllByUserId(userId)
-        return chats.map {
-            chatCartMapper.parce(it, userId)
-        }
+        return chats
+            .map {
+                chatCartMapper.parce(it, userId)
+            }
+            .filter { it.lastMessage != null }
+            .sortedByDescending { it.lastMessage?.sentAt }
     }
 
     fun getChatmateInfo(chatId: UUID, userId: UUID) = requireNotNull(
